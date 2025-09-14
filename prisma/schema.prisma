@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  password     String
+  subscription String   @default("free") // free, pro, enterprise
+  creditsUsed  Int      @default(0)
+  creditsLimit Int      @default(10)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  searches     Search[]
+  savedBusinesses SavedBusiness[]
+
+  @@map("users")
+}
+
+model Business {
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  phone       String?
+  website     String?
+  email       String?
+  rating      Float?
+  reviewCount Int?
+  category    String
+  latitude    Float?
+  longitude   Float?
+  hours       String[]  @default([])
+  verified    Boolean   @default(false)
+  placeId     String?   @unique // Google Places ID
+  lastUpdated DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  searches        SearchResult[]
+  savedBy         SavedBusiness[]
+  contactInfo     ContactInfo?
+  websiteAnalysis WebsiteAnalysis?
+
+  @@map("businesses")
+}
+
+model Search {
+  id        String   @id @default(cuid())
+  query     String
+  location  String
+  radius    Int?
+  category  String?
+  minRating Float?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  user    User?           @relation(fields: [userId], references: [id])
+  results SearchResult[]
+
+  @@map("searches")
+}
+
+model SearchResult {
+  id         String @id @default(cuid())
+  searchId   String
+  businessId String
+
+  search   Search   @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@unique([searchId, businessId])
+  @@map("search_results")
+}
+
+model SavedBusiness {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessId])
+  @@map("saved_businesses")
+}
+
+model ContactInfo {
+  id            String   @id @default(cuid())
+  businessId    String   @unique
+  emails        String[] @default([])
+  phones        String[] @default([])
+  socialMedia   Json     @default("{}")
+  confidence    Float    @default(0.0)
+  lastAnalyzed  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("contact_info")
+}
+
+model WebsiteAnalysis {
+  id           String   @id @default(cuid())
+  businessId   String   @unique
+  url          String
+  title        String?
+  description  String?
+  emails       String[] @default([])
+  phones       String[] @default([])
+  socialMedia  Json     @default("{}")
+  technologies String[] @default([])
+  lastAnalyzed DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("website_analysis")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  key       String   @unique
+  active    Boolean  @default(true)
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("api_keys")
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  identifier String  // IP or API key
+  requests  Int      @default(0)
+  windowStart DateTime @default(now())
+
+  @@unique([identifier])
+  @@map("rate_limits")
+}
