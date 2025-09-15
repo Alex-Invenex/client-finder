@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Validation error',
-          message: error.errors[0].message,
+          message: error.issues[0].message,
         },
         { status: 400 }
       );
@@ -108,7 +108,7 @@ async function analyzeWebsite(url: string) {
 function extractEmails(html: string): string[] {
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   const emails = html.match(emailRegex) || [];
-  return [...new Set(emails)].filter(email =>
+  return Array.from(new Set(emails)).filter(email =>
     !email.includes('example.com') &&
     !email.includes('placeholder')
   );
@@ -117,7 +117,7 @@ function extractEmails(html: string): string[] {
 function extractPhones(html: string): string[] {
   const phoneRegex = /(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/g;
   const phones = html.match(phoneRegex) || [];
-  return [...new Set(phones)];
+  return Array.from(new Set(phones));
 }
 
 function extractSocialMedia($: cheerio.CheerioAPI): Record<string, string> {
@@ -185,5 +185,5 @@ function extractTechnologies(html: string, $: cheerio.CheerioAPI): string[] {
     technologies.push('Bootstrap');
   }
 
-  return [...new Set(technologies)];
+  return Array.from(new Set(technologies));
 }

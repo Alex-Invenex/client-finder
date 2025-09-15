@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import {
   MapPin,
@@ -35,11 +35,7 @@ export default function BusinessDetailPage() {
   const [saved, setSaved] = useState(false);
   const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
 
-  useEffect(() => {
-    loadBusinessDetails();
-  }, [businessId]);
-
-  const loadBusinessDetails = async () => {
+  const loadBusinessDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -65,7 +61,11 @@ export default function BusinessDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessId]);
+
+  useEffect(() => {
+    loadBusinessDetails();
+  }, [loadBusinessDetails]);
 
   const handleAnalyzeWebsite = async () => {
     if (!business?.website) return;
@@ -151,7 +151,7 @@ export default function BusinessDetailPage() {
                 <h1 className="text-2xl font-bold text-secondary-900 flex items-center gap-2">
                   {business.name}
                   {business.verified && (
-                    <Shield className="w-5 h-5 text-accent-600" title="Verified Business" />
+                    <Shield className="w-5 h-5 text-accent-600" />
                   )}
                 </h1>
                 <p className="text-secondary-600">{business.category}</p>

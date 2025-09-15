@@ -113,7 +113,7 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-3xl font-bold text-secondary-900">Dashboard</h1>
               <p className="text-secondary-600 mt-1">
-                Welcome back, {mockUser.name}! Here's your business intelligence overview.
+                Welcome back, {mockUser.name}! Here&apos;s your business intelligence overview.
               </p>
             </div>
 

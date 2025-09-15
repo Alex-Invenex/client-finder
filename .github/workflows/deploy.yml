@@ -1,0 +1,88 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  APP_NAME: 'client-finder'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd "/home/invenex/Client Finder"
+            git pull origin master
+            npm ci
+            npm run build
+            npx prisma migrate deploy
+            npx prisma generate
+            pm2 reload ${{ env.APP_NAME }} --update-env || pm2 start ecosystem.config.js --env production
+            pm2 save
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://clientfinder.invenex.in/api/health || exit 1
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "Deployment successful to clientfinder.invenex.in"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deployment failed"
+          exit 1

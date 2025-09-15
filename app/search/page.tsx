@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import BusinessCard from '@/components/BusinessCard';
@@ -23,13 +23,7 @@ export default function SearchPage() {
   const initialQuery = searchParams.get('q') || '';
   const initialLocation = searchParams.get('location') || '';
 
-  useEffect(() => {
-    if (initialQuery && initialLocation) {
-      handleSearch(initialQuery, initialLocation, {});
-    }
-  }, [initialQuery, initialLocation]);
-
-  const handleSearch = async (query: string, location: string, filters: any) => {
+  const handleSearch = useCallback(async (query: string, location: string, filters: any) => {
     setLoading(true);
     setError(null);
 
@@ -57,7 +51,13 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (initialQuery && initialLocation) {
+      handleSearch(initialQuery, initialLocation, {});
+    }
+  }, [initialQuery, initialLocation, handleSearch]);
 
   const handleSaveBusiness = (businessId: string) => {
     setSavedBusinesses(prev => {

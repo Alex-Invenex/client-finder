@@ -212,7 +212,7 @@ export default function PricingPage() {
 
                 {/* Features */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-secondary-900">What's included:</h4>
+                  <h4 className="font-semibold text-secondary-900">What&apos;s included:</h4>
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-3">
@@ -253,7 +253,7 @@ export default function PricingPage() {
                 What happens when I reach my credit limit?
               </h3>
               <p className="text-secondary-600">
-                Once you reach your monthly credit limit, you can either upgrade your plan or wait until the next billing cycle for your credits to reset. We'll notify you when you're approaching your limit.
+                Once you reach your monthly credit limit, you can either upgrade your plan or wait until the next billing cycle for your credits to reset. We&apos;ll notify you when you&apos;re approaching your limit.
               </p>
             </div>
 
@@ -289,7 +289,7 @@ export default function PricingPage() {
                 Do you offer refunds?
               </h3>
               <p className="text-secondary-600">
-                We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied, contact our support team for a full refund.
+                We offer a 30-day money-back guarantee for all paid plans. If you&apos;re not satisfied, contact our support team for a full refund.
               </p>
             </div>
           </div>
